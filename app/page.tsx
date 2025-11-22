@@ -6,6 +6,13 @@ import { ProductosStock } from "./components/dashboard/productos-stock";
 import { StatsGrid } from "./components/dashboard/stats-grid";
 import { productTypeLabels } from "./data/mock";
 import { useDataStore } from "./store/data-store";
+import {
+  FiUsers,
+  FiClock,
+  FiCheckCircle,
+  FiTrendingUp,
+  FiAlertTriangle,
+} from "react-icons/fi";
 
 const currency = new Intl.NumberFormat("es-NI", {
   style: "currency",
@@ -55,30 +62,35 @@ export default function Home() {
       value: fiadores.length,
       hint: "Clientes con historial de fiado",
       tone: "primary" as const,
+      icon: <FiUsers />,
     },
     {
       title: "Deudas pendientes",
       value: totalPendientes,
       hint: "Pendientes de revisar",
       tone: "warning" as const,
+      icon: <FiClock />,
     },
     {
       title: "Deudas pagadas",
       value: totalPagadas,
       hint: "Pagadas y cerradas",
       tone: "success" as const,
+      icon: <FiCheckCircle />,
     },
     {
       title: "Deudas activas",
       value: totalActivas,
       hint: "Fiados que siguen abiertos",
       tone: "primary" as const,
+      icon: <FiTrendingUp />,
     },
     {
       title: "Total adeudado",
       value: currency.format(totalAdeudado),
       hint: "Monto total por cobrar",
       tone: "amber" as const,
+      icon: <FiAlertTriangle />,
     },
   ];
 

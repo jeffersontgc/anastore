@@ -5,6 +5,7 @@ type StatItem = {
   value: string | number;
   hint?: string;
   tone?: "primary" | "warning" | "success" | "amber" | "muted";
+  icon?: React.ReactNode;
 };
 
 type Props = {
@@ -21,6 +22,7 @@ export function StatsGrid({ items }: Props) {
           value={item.value}
           hint={item.hint}
           tone={item.tone}
+          icon={item.icon}
         />
       ))}
     </div>

@@ -3,6 +3,7 @@ type Props = {
   value: string | number;
   hint?: string;
   tone?: "primary" | "success" | "warning" | "amber" | "muted";
+  icon?: React.ReactNode;
 };
 
 const toneClasses: Record<
@@ -16,7 +17,7 @@ const toneClasses: Record<
   muted: { badge: "bg-slate-100 text-slate-600", dot: "bg-slate-400" },
 };
 
-export function StatCard({ title, value, hint, tone = "primary" }: Props) {
+export function StatCard({ title, value, hint, tone = "primary", icon }: Props) {
   const styles = toneClasses[tone];
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -31,7 +32,11 @@ export function StatCard({ title, value, hint, tone = "primary" }: Props) {
         <span
           className={`flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${styles.badge}`}
         >
-          <span className={`h-2.5 w-2.5 rounded-full ${styles.dot}`} />
+          {icon ? (
+            <span className="text-base text-current">{icon}</span>
+          ) : (
+            <span className={`h-2.5 w-2.5 rounded-full ${styles.dot}`} />
+          )}
           Activo
         </span>
       </div>
