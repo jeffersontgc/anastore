@@ -1,3 +1,4 @@
+import { useAuthStore } from "@/app/store/auth-store";
 import React from "react";
 
 interface Props {
@@ -16,6 +17,8 @@ const DeudasFiltro: React.FC<Props> = ({
   ...props
 }) => {
   const { setFechaFiltro, nombre, setNombre, setCreateOpen } = props;
+
+  const user = useAuthStore((state) => state.currentUser);
 
   return (
     <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -60,13 +63,15 @@ const DeudasFiltro: React.FC<Props> = ({
           />
         </div>
       </div>
-      <button
-        type="button"
-        onClick={() => setCreateOpen(true)}
-        className="w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 sm:w-auto"
-      >
-        Nueva deuda
-      </button>
+      {user?.isCeo && (
+        <button
+          type="button"
+          onClick={() => setCreateOpen(true)}
+          className="w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 sm:w-auto"
+        >
+          Nueva deuda
+        </button>
+      )}
     </div>
   );
 };

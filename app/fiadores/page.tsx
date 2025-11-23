@@ -78,10 +78,7 @@ export default function FiadoresPage() {
     const enriched = deudas.map((deuda) => ({
       ...deuda,
       fiador: deuda.user,
-      productosCount: deuda.products.reduce(
-        (sum, p) => sum + p.quantity,
-        0
-      ),
+      productosCount: deuda.products.reduce((sum, p) => sum + p.quantity, 0),
     }));
 
     return enriched.filter((deuda) => {
@@ -128,9 +125,7 @@ export default function FiadoresPage() {
     );
   };
 
-  const handleCreateDebt = async (
-    event: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleCreateDebt = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (selectedFiadorId === null || !fechaPagar || !selectedProducts.length)
       return;
@@ -187,10 +182,7 @@ export default function FiadoresPage() {
           fechaPagar: d.date_pay,
           status: d.status as DebtStatus,
           monto: Number(d.amount),
-          productosCount: d.products.reduce(
-            (sum, p) => sum + p.quantity,
-            0
-          ),
+          productosCount: d.products.reduce((sum, p) => sum + p.quantity, 0),
           productos: d.products.map((prod) => ({
             nombre: prod.product.name,
             precio: prod.price,
@@ -299,7 +291,9 @@ export default function FiadoresPage() {
                 </p>
               </div>
               <Badge
-                label={statusLabel[detalle.status as DebtStatus] ?? detalle.status}
+                label={
+                  statusLabel[detalle.status as DebtStatus] ?? detalle.status
+                }
                 tone={statusTone[detalle.status] || "gray"}
               />
             </div>

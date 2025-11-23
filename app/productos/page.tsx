@@ -7,6 +7,7 @@ import ProductosTable from "../components/productos/table";
 import ProductosForm from "../components/productos/form";
 import { useDataStore } from "../store/data-store";
 import { ProductType } from "../types/backend";
+import { useAuthStore } from "@/app/store/auth-store";
 
 type FormState = {
   name: string;
@@ -34,6 +35,7 @@ export default function ProductosPage() {
   const hydrated = useDataStore((state) => state.hydrated);
   const loading = useDataStore((state) => state.loading);
   const error = useDataStore((state) => state.error);
+  const user = useAuthStore((state) => state.currentUser);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -89,15 +91,17 @@ export default function ProductosPage() {
       title="Productos"
       description="Gestiona el inventario disponible para los fiados"
     >
-      <div className="mb-3 flex justify-end">
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800"
-        >
-          Crear producto
-        </button>
-      </div>
+      {user?.isCeo && (
+        <div className="mb-3 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800"
+          >
+            Crear producto
+          </button>
+        </div>
+      )}
 
       <ProductosTable
         productos={productos}

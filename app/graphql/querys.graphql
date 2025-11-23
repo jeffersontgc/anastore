@@ -128,6 +128,7 @@ query Users {
     email
     picture
     isDelinquent
+    isCeo
     createdAt
     updatedAt
   }
@@ -177,6 +178,7 @@ query GetMe {
     lastname
     email
     picture
+    isCeo
     isDelinquent
     createdAt
     updatedAt

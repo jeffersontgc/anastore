@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { create } from "zustand";
 import mutations from "../graphql/mutations.graphql";
 import queries from "../graphql/querys.graphql";
@@ -120,3 +121,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
   },
 }));
+
+export const useAuthInit = () => {
+  const currentUser = useAuthStore((state) => state.currentUser);
+  const getMe = useAuthStore((state) => state.getMe);
+  const requestedRef = useRef(false);
+
+  useEffect(() => {
+    if (requestedRef.current || currentUser) return;
+    requestedRef.current = true;
+    getMe().catch(() => {
+      requestedRef.current = false;
+    });
+  }, [currentUser, getMe]);
+};

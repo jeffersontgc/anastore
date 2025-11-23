@@ -1,8 +1,4 @@
-export type ProductType =
-  | "GRANOS_BASICOS"
-  | "SNACKS"
-  | "BEBIDAS"
-  | "LACTEOS";
+export type ProductType = "GRANOS_BASICOS" | "SNACKS" | "BEBIDAS" | "LACTEOS";
 
 export type DebtStatus = "ACTIVE" | "PENDING" | "PAID" | "SETTLED";
 
@@ -25,6 +21,7 @@ export type User = {
   email: string;
   picture?: string | null;
   isDelinquent: boolean;
+  isCeo: boolean;
   createdAt?: string;
   updatedAt?: string;
 };

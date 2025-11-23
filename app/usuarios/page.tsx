@@ -7,6 +7,7 @@ import UsersTable from "../components/usuarios/table";
 import CreateUserFormModal from "../components/usuarios/form";
 import { useDataStore } from "../store/data-store";
 import { CreateUserForm } from "../types/users";
+import { useAuthStore } from "@/app/store/auth-store";
 
 const emptyForm: CreateUserForm = {
   firstname: "",
@@ -26,15 +27,12 @@ export default function UsuariosPage() {
   const hydrated = useDataStore((state) => state.hydrated);
   const loading = useDataStore((state) => state.loading);
   const error = useDataStore((state) => state.error);
+  const user = useAuthStore((state) => state.currentUser);
 
   const deudasActivasPorUsuario = useMemo(() => {
     const mapa: Record<string, number> = {};
     deudas.forEach((deuda) => {
-      if (
-        deuda.status === "PAID" ||
-        deuda.status === "SETTLED"
-      )
-        return;
+      if (deuda.status === "PAID" || deuda.status === "SETTLED") return;
       mapa[deuda.user.uuid] = (mapa[deuda.user.uuid] || 0) + 1;
     });
     return mapa;
@@ -88,13 +86,15 @@ export default function UsuariosPage() {
               {usuarios.length} fiadores registrados
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800"
-          >
-            Crear usuario
-          </button>
+          {user?.isCeo && (
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800"
+            >
+              Crear usuario
+            </button>
+          )}
         </div>
 
         <UsersTable

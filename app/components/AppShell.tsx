@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { TiThMenu } from "react-icons/ti";
 import { useDataStore } from "../store/data-store";
-import { useAuthStore } from "../store/auth-store";
+import { useAuthInit, useAuthStore } from "../store/auth-store";
 
 type Props = {
   children: ReactNode;
@@ -29,6 +29,7 @@ export function AppShell({ children, title, description }: Props) {
   const loading = useDataStore((state) => state.loading);
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.currentUser);
+  useAuthInit();
 
   useEffect(() => {
     if (!hydrated && !loading) {
