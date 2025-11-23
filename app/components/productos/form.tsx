@@ -1,11 +1,11 @@
 import React from "react";
-import { ProductoType } from "@/app/data/mock";
+import { ProductType } from "@/app/types/backend";
 
 type FormState = {
   name: string;
   price: string;
   stock: string;
-  type: ProductoType;
+  type: ProductType;
 };
 
 type Props = {
@@ -13,7 +13,7 @@ type Props = {
   setForm: React.Dispatch<React.SetStateAction<FormState>>;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   onClose: () => void;
-  editingId: number | null;
+  editingUuid: string | null;
 };
 
 const ProductosForm: React.FC<Props> = ({
@@ -21,7 +21,7 @@ const ProductosForm: React.FC<Props> = ({
   setForm,
   onSubmit,
   onClose,
-  editingId,
+  editingUuid,
 }) => {
   return (
     <form className="space-y-4" onSubmit={onSubmit}>
@@ -64,14 +64,14 @@ const ProductosForm: React.FC<Props> = ({
           <select
             value={form.type}
             onChange={(e) =>
-              setForm({ ...form, type: e.target.value as ProductoType })
+              setForm({ ...form, type: e.target.value as ProductType })
             }
             className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-blue-100 focus:ring"
           >
-            <option value="granos_basicos">Granos basicos</option>
-            <option value="snacks">Snacks</option>
-            <option value="bebidas">Bebidas</option>
-            <option value="lacteos">Lacteos</option>
+            <option value="GRANOS_BASICOS">Granos básicos</option>
+            <option value="SNACKS">Snacks</option>
+            <option value="BEBIDAS">Bebidas</option>
+            <option value="LACTEOS">Lácteos</option>
           </select>
         </label>
       </div>
@@ -88,7 +88,7 @@ const ProductosForm: React.FC<Props> = ({
           type="submit"
           className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
         >
-          {editingId ? "Guardar cambios" : "Crear producto"}
+          {editingUuid ? "Guardar cambios" : "Crear producto"}
         </button>
       </div>
     </form>

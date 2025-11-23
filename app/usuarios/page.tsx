@@ -4,74 +4,47 @@ import { FormEvent, useMemo, useState } from "react";
 import { AppShell } from "../components/AppShell";
 import { Modal } from "../components/shared/Modal";
 import UsersTable from "../components/usuarios/table";
-import CreateAndUpdateUser from "../components/usuarios/form";
+import CreateUserFormModal from "../components/usuarios/form";
 import { useDataStore } from "../store/data-store";
-import { User, UsersFormInput } from "../types/users";
+import { CreateUserForm } from "../types/users";
 
-const emptyForm: UsersFormInput = {
-  nombre: "",
-  apellido: "",
-  edad: "",
-  telefono: "",
-  imagen: null,
+const emptyForm: CreateUserForm = {
+  firstname: "",
+  lastname: "",
+  email: "",
+  password: "",
+  profilePicture: null,
 };
 
 export default function UsuariosPage() {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<UsersFormInput>(emptyForm);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const usuarios = useDataStore((state) => state.usuarios);
-  const deudas = useDataStore((state) => state.deudas);
-  const addUsuario = useDataStore((state) => state.addUsuario);
-  const updateUsuario = useDataStore((state) => state.updateUsuario);
-  const deleteUsuario = useDataStore((state) => state.deleteUsuario);
+  const [form, setForm] = useState<CreateUserForm>(emptyForm);
+
+  const usuarios = useDataStore((state) => state.users);
+  const deudas = useDataStore((state) => state.debts);
+  const createUser = useDataStore((state) => state.createUser);
   const hydrated = useDataStore((state) => state.hydrated);
+  const loading = useDataStore((state) => state.loading);
+  const error = useDataStore((state) => state.error);
 
   const deudasActivasPorUsuario = useMemo(() => {
-    const mapa: Record<number, number> = {};
+    const mapa: Record<string, number> = {};
     deudas.forEach((deuda) => {
-      if (["pagada", "saldada"].includes(deuda.status)) return;
-      mapa[deuda.fiadorId] = (mapa[deuda.fiadorId] || 0) + 1;
+      if (
+        deuda.status === "PAID" ||
+        deuda.status === "SETTLED"
+      )
+        return;
+      mapa[deuda.user.uuid] = (mapa[deuda.user.uuid] || 0) + 1;
     });
     return mapa;
   }, [deudas]);
 
-  console.log("usuarios", usuarios);
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const nextId =
-      usuarios.reduce((max: number, user: User) => Math.max(max, user.id), 0) +
-      1;
-    const payload: User = {
-      ...form,
-      id: editingId ?? nextId,
-      edad: Number(form.edad || 0),
-    };
-
-    if (editingId) {
-      updateUsuario(editingId, payload);
-    } else {
-      addUsuario(payload);
-    }
-
+    await createUser(form);
     setOpen(false);
-    setEditingId(null);
     setForm(emptyForm);
-  }
-
-  function startEdit(id: number) {
-    const user = usuarios.find((u) => u.id === id);
-    if (!user) return;
-    setEditingId(id);
-    setForm({
-      nombre: user.nombre,
-      apellido: user.apellido,
-      edad: String(user.edad),
-      telefono: user.telefono,
-      imagen: user.imagen || null,
-    });
-    setOpen(true);
   }
 
   function handleFileChange(fileList: FileList | null) {
@@ -79,20 +52,23 @@ export default function UsuariosPage() {
     const file = fileList[0];
     const reader = new FileReader();
     reader.onload = () => {
-      setForm((prev) => ({ ...prev, imagen: String(reader.result) }));
+      setForm((prev) => ({ ...prev, profilePicture: String(reader.result) }));
     };
     reader.readAsDataURL(file);
   }
 
-  if (!hydrated) {
+  if (!hydrated || loading) {
     return (
       <AppShell
         title="Usuarios"
         description="Gestiona los fiadores registrados y sus datos de contacto"
       >
         <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
-          Cargando datos locales...
+          Sincronizando datos con el backend...
         </div>
+        {error ? (
+          <p className="mt-3 text-sm text-rose-600">Error: {error}</p>
+        ) : null}
       </AppShell>
     );
   }
@@ -124,8 +100,6 @@ export default function UsuariosPage() {
         <UsersTable
           usuarios={usuarios}
           deudasActivasPorUsuario={deudasActivasPorUsuario}
-          startEdit={startEdit}
-          deleteUsuario={deleteUsuario}
         />
       </div>
 
@@ -133,20 +107,19 @@ export default function UsuariosPage() {
         open={open}
         onClose={() => {
           setOpen(false);
-          setEditingId(null);
           setForm(emptyForm);
         }}
-        title={editingId ? "Editar usuario" : "Crear usuario"}
+        title="Crear usuario"
       >
-        <CreateAndUpdateUser
+        <CreateUserFormModal
           handleSubmit={handleSubmit}
           form={form}
           setForm={setForm}
           handleFileChange={handleFileChange}
-          setOpen={setOpen}
-          setEditingId={setEditingId}
-          emptyForm={emptyForm}
-          editingId={editingId}
+          onClose={() => {
+            setOpen(false);
+            setForm(emptyForm);
+          }}
         />
       </Modal>
     </AppShell>

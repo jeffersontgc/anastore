@@ -5,6 +5,7 @@ import { DeudasProximas } from "./components/dashboard/deudas-proximas";
 import { ProductosStock } from "./components/dashboard/productos-stock";
 import { StatsGrid } from "./components/dashboard/stats-grid";
 import { productTypeLabels } from "./data/mock";
+import { DebtStatus } from "./types/backend";
 import { useDataStore } from "./store/data-store";
 import {
   FiUsers,
@@ -27,40 +28,56 @@ const fecha = new Intl.DateTimeFormat("es-ES", {
 });
 
 export default function Home() {
-  const fiadores = useDataStore((state) => state.fiadores);
-  const deudas = useDataStore((state) => state.deudas);
-  const productos = useDataStore((state) => state.productos);
+  const users = useDataStore((state) => state.users);
+  const deudas = useDataStore((state) => state.debts);
+  const productos = useDataStore((state) => state.products);
   const hydrated = useDataStore((state) => state.hydrated);
-  if (!hydrated) {
+  const loading = useDataStore((state) => state.loading);
+  const error = useDataStore((state) => state.error);
+
+  if (!hydrated || loading) {
     return (
       <AppShell
         title="Dashboard"
         description="Resumen general del sistema de fiados"
       >
         <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
-          Cargando datos locales...
+          Sincronizando datos con el backend...
         </div>
+        {error ? (
+          <p className="mt-3 text-sm text-rose-600">Error: {error}</p>
+        ) : null}
       </AppShell>
     );
   }
 
-  const enrichedDeudas = deudas
+  const enrichedDeudas = [...deudas]
     .map((deuda) => ({
       ...deuda,
-      fiador: fiadores.find((f) => f.id === deuda.fiadorId),
+      fiadorNombre: `${deuda.user.firstname} ${deuda.user.lastname}`,
     }))
-    .filter((deuda) => deuda.fiador);
+    .sort(
+      (a, b) =>
+        new Date(a.date_pay).getTime() - new Date(b.date_pay).getTime()
+    );
 
-  const totalPendientes = deudas.filter((d) => d.status === "pendiente").length;
-  const totalPagadas = deudas.filter((d) => d.status === "pagada").length;
-  const totalActivas = deudas.filter((d) => d.status === "activa").length;
-  const totalAdeudado = deudas.reduce((sum, d) => sum + d.monto, 0);
+  const totalPendientes = deudas.filter(
+    (d) => d.status === "PENDING"
+  ).length;
+  const totalPagadas = deudas.filter(
+    (d) => d.status === "PAID" || d.status === "SETTLED"
+  ).length;
+  const totalActivas = deudas.filter((d) => d.status === "ACTIVE").length;
+  const totalAdeudado = deudas.reduce(
+    (sum, d) => sum + Number(d.amount || 0),
+    0
+  );
 
   const statItems = [
     {
       title: "Total de fiadores",
-      value: fiadores.length,
-      hint: "Clientes con historial de fiado",
+      value: users.length,
+      hint: "Clientes creados en el sistema",
       tone: "primary" as const,
       icon: <FiUsers />,
     },
@@ -106,13 +123,17 @@ export default function Home() {
       <StatsGrid items={statItems} />
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <DeudasProximas items={enrichedDeudas.slice(0, 5).map((d) => ({
-          id: d.id,
-          fiadorNombre: d.fiador?.nombre || "Desconocido",
-          fechaPagar: d.fechaPagar,
-          status: d.status,
-          monto: d.monto,
-        }))} currency={currency} fecha={fecha} />
+        <DeudasProximas
+          items={enrichedDeudas.slice(0, 5).map((d) => ({
+            id: d.id,
+            fiadorNombre: d.fiadorNombre || "Desconocido",
+            fechaPagar: d.date_pay,
+            status: d.status as DebtStatus,
+            monto: Number(d.amount),
+          }))}
+          currency={currency}
+          fecha={fecha}
+        />
         <ProductosStock productos={productos} currency={currency} />
 
         <section className="rounded-xl border border-rose-100 bg-rose-50/70 p-5 shadow-sm lg:col-span-2">

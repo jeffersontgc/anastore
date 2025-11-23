@@ -1,16 +1,11 @@
-export type User = {
-  id: number;
-  nombre: string;
-  apellido?: string;
-  edad: number;
-  telefono: string;
-  imagen?: string | null;
-};
+import { User as BackendUser } from "./backend";
 
-export type UsersFormInput = {
-  nombre: string;
-  apellido?: string;
-  edad: string;
-  telefono: string;
-  imagen?: string | null;
+export type User = BackendUser;
+
+export type CreateUserForm = {
+  firstname: string;
+  lastname: string;
+  email: string;
+  password: string;
+  profilePicture?: string | null;
 };

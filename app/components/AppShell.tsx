@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { TiThMenu } from "react-icons/ti";
 import { useDataStore } from "../store/data-store";
+import { useAuthStore } from "../store/auth-store";
 
 type Props = {
   children: ReactNode;
@@ -23,10 +24,17 @@ const navItems = [
 export function AppShell({ children, title, description }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const hydrate = useDataStore((state) => state.hydrate);
+  const hydrated = useDataStore((state) => state.hydrated);
+  const loading = useDataStore((state) => state.loading);
+  const logout = useAuthStore((state) => state.logout);
+  const user = useAuthStore((state) => state.currentUser);
 
   useEffect(() => {
-    useDataStore.persist.rehydrate();
-  }, []);
+    if (!hydrated && !loading) {
+      hydrate();
+    }
+  }, [hydrate, hydrated, loading]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-100 via-slate-50 to-white text-slate-900">
@@ -61,21 +69,37 @@ export function AppShell({ children, title, description }: Props) {
                 </Link>
               );
             })}
+            <button
+              type="button"
+              onClick={async () => {
+                await logout();
+                setOpen(false);
+                window.location.href = "/login";
+              }}
+              className="ml-2 rounded-lg px-3 py-2 font-medium text-slate-600 transition hover:bg-slate-100"
+            >
+              Cerrar sesión
+            </button>
           </nav>
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
-        {(title || description) && (
-          <div className="mb-6">
-            {title ? (
-              <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
-            ) : null}
-            {description ? (
-              <p className="mt-1 text-sm text-slate-600">{description}</p>
-            ) : null}
-          </div>
-        )}
+        <div className="flex items-center justify-between">
+          {(title || description) && (
+            <div className="mb-6">
+              {title ? (
+                <h1 className="text-2xl font-semibold text-slate-900">
+                  {title}
+                </h1>
+              ) : null}
+              {description ? (
+                <p className="mt-1 text-sm text-slate-600">{description}</p>
+              ) : null}
+            </div>
+          )}
+          <span>Hola {user?.firstname}</span>
+        </div>
         {children}
       </main>
 
@@ -125,6 +149,17 @@ export function AppShell({ children, title, description }: Props) {
               </Link>
             );
           })}
+          <button
+            type="button"
+            onClick={async () => {
+              await logout();
+              setOpen(false);
+              window.location.href = "/login";
+            }}
+            className="mt-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+          >
+            Cerrar sesión
+          </button>
         </nav>
       </aside>
     </div>

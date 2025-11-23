@@ -1,6 +1,7 @@
 import React from "react";
 import { Badge } from "@/app/components/shared/Badge";
-import { productTypeLabels, Producto } from "@/app/data/mock";
+import { productTypeLabels } from "@/app/data/mock";
+import { Product } from "@/app/types/backend";
 
 const currency = new Intl.NumberFormat("es-NI", {
   style: "currency",
@@ -9,9 +10,9 @@ const currency = new Intl.NumberFormat("es-NI", {
 });
 
 type Props = {
-  productos: Producto[];
-  startEdit: (id: number) => void;
-  deleteProducto: (id: number) => void;
+  productos: Product[];
+  startEdit: (uuid: string) => void;
+  deleteProducto: (uuid: string) => void;
 };
 
 const ProductosTable: React.FC<Props> = ({
@@ -35,7 +36,7 @@ const ProductosTable: React.FC<Props> = ({
       <div className="block sm:hidden">
         <div className="divide-y divide-slate-100">
           {productos.map((producto) => (
-            <div key={producto.id} className="px-4 py-4">
+            <div key={producto.uuid} className="px-4 py-4">
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <p className="text-base font-semibold text-slate-900">
@@ -53,14 +54,14 @@ const ProductosTable: React.FC<Props> = ({
               <div className="mt-3 flex justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => startEdit(producto.id)}
+                  onClick={() => startEdit(producto.uuid)}
                   className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
                 >
                   Editar
                 </button>
                 <button
                   type="button"
-                  onClick={() => deleteProducto(producto.id)}
+                  onClick={() => deleteProducto(producto.uuid)}
                   className="rounded-lg bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-600"
                 >
                   Eliminar
@@ -84,7 +85,7 @@ const ProductosTable: React.FC<Props> = ({
           </thead>
           <tbody className="divide-y divide-slate-100">
             {productos.map((producto) => (
-              <tr key={producto.id} className="hover:bg-slate-50/60">
+              <tr key={producto.uuid} className="hover:bg-slate-50/60">
                 <td className="px-4 py-3 font-medium text-slate-900">
                   {producto.name}
                 </td>
@@ -102,18 +103,18 @@ const ProductosTable: React.FC<Props> = ({
                     <button
                       type="button"
                       onClick={() => startEdit(producto.id)}
-                      className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => deleteProducto(producto.id)}
-                      className="rounded-lg bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-600"
-                    >
-                      Eliminar
-                    </button>
-                  </div>
+                    className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteProducto(producto.uuid)}
+                    className="rounded-lg bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-600"
+                  >
+                    Eliminar
+                  </button>
+                </div>
                 </td>
               </tr>
             ))}

@@ -1,10 +1,11 @@
+import { DebtStatus } from "@/app/types/backend";
 import { Badge } from "../shared/Badge";
 
 type DeudaItem = {
   id: number | string;
   fiadorNombre: string;
   fechaPagar: string;
-  status: string;
+  status: DebtStatus;
   monto: number;
 };
 
@@ -15,6 +16,20 @@ type Props = {
 };
 
 export function DeudasProximas({ items, currency, fecha }: Props) {
+  const toneByStatus: Record<DebtStatus, "gray" | "green" | "amber" | "blue"> =
+    {
+      ACTIVE: "blue",
+      PENDING: "amber",
+      PAID: "green",
+      SETTLED: "green",
+    };
+  const labelByStatus: Record<DebtStatus, string> = {
+    ACTIVE: "Activa",
+    PENDING: "Pendiente",
+    PAID: "Pagada",
+    SETTLED: "Saldada",
+  };
+
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between">
@@ -40,14 +55,8 @@ export function DeudasProximas({ items, currency, fecha }: Props) {
               </p>
             </div>
             <Badge
-              label={deuda.status.toUpperCase()}
-              tone={
-                deuda.status === "pagada"
-                  ? "green"
-                  : deuda.status === "pendiente"
-                  ? "amber"
-                  : "blue"
-              }
+              label={labelByStatus[deuda.status] ?? deuda.status}
+              tone={toneByStatus[deuda.status] ?? "gray"}
             />
             <p className="text-right font-semibold text-slate-900">
               {currency.format(deuda.monto)}

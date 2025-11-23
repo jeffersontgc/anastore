@@ -1,26 +1,22 @@
 import React from "react";
 import Image from "next/image";
-import { UsersFormInput } from "@/app/types/users";
+import { CreateUserForm } from "@/app/types/users";
 
 interface Props {
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-  form: UsersFormInput;
-  setForm: React.Dispatch<React.SetStateAction<UsersFormInput>>;
+  form: CreateUserForm;
+  setForm: React.Dispatch<React.SetStateAction<CreateUserForm>>;
   handleFileChange: (files: FileList | null) => void;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setEditingId: React.Dispatch<React.SetStateAction<number | null>>;
-  emptyForm: UsersFormInput;
-  editingId: number | null;
+  onClose: () => void;
 }
-const CreateAndUpdateUser = ({
+
+const CreateUserFormModal = ({
   handleSubmit,
   form,
   setForm,
-  ...props
+  handleFileChange,
+  onClose,
 }: Props) => {
-  const { handleFileChange, setOpen, setEditingId, emptyForm, editingId } =
-    props;
-
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -28,48 +24,50 @@ const CreateAndUpdateUser = ({
           <span>Nombre</span>
           <input
             required
-            value={form.nombre}
-            onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+            value={form.firstname}
+            onChange={(e) => setForm({ ...form, firstname: e.target.value })}
             className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none ring-blue-100 focus:ring"
           />
         </label>
         <label className="space-y-1 text-sm text-slate-700">
           <span>Apellido</span>
           <input
-            value={form.apellido}
-            onChange={(e) => setForm({ ...form, apellido: e.target.value })}
+            required
+            value={form.lastname}
+            onChange={(e) => setForm({ ...form, lastname: e.target.value })}
             className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none ring-blue-100 focus:ring"
           />
         </label>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="space-y-1 text-sm text-slate-700">
-          <span>Edad</span>
+          <span>Email</span>
           <input
             required
-            type="number"
-            min={18}
-            value={form.edad}
-            onChange={(e) => setForm({ ...form, edad: e.target.value })}
+            type="email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
             className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none ring-blue-100 focus:ring"
           />
         </label>
         <label className="space-y-1 text-sm text-slate-700">
-          <span>Telefono</span>
+          <span>Contraseña</span>
           <input
             required
-            value={form.telefono}
-            onChange={(e) => setForm({ ...form, telefono: e.target.value })}
+            type="password"
+            minLength={6}
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
             className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none ring-blue-100 focus:ring"
           />
         </label>
       </div>
       <div className="space-y-2">
-        <span className="text-sm text-slate-700">Imagen</span>
+        <span className="text-sm text-slate-700">Foto (opcional)</span>
         <div className="flex items-center gap-3">
-          {form.imagen ? (
+          {form.profilePicture ? (
             <Image
-              src={form.imagen}
+              src={form.profilePicture}
               alt="Preview"
               width={48}
               height={48}
@@ -88,10 +86,10 @@ const CreateAndUpdateUser = ({
               onChange={(e) => handleFileChange(e.target.files)}
               className="w-full text-sm"
             />
-            {form.imagen ? (
+            {form.profilePicture ? (
               <button
                 type="button"
-                onClick={() => setForm((prev) => ({ ...prev, imagen: null }))}
+                onClick={() => setForm((prev) => ({ ...prev, profilePicture: null }))}
                 className="text-xs font-semibold text-slate-600 hover:underline"
               >
                 Quitar
@@ -104,11 +102,7 @@ const CreateAndUpdateUser = ({
       <div className="flex justify-end gap-2 pt-2">
         <button
           type="button"
-          onClick={() => {
-            setOpen(false);
-            setEditingId(null);
-            setForm(emptyForm);
-          }}
+          onClick={onClose}
           className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
         >
           Cancelar
@@ -117,11 +111,11 @@ const CreateAndUpdateUser = ({
           type="submit"
           className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
         >
-          {editingId ? "Guardar cambios" : "Crear usuario"}
+          Crear usuario
         </button>
       </div>
     </form>
   );
 };
 
-export default CreateAndUpdateUser;
+export default CreateUserFormModal;

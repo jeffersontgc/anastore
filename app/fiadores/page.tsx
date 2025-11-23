@@ -4,12 +4,12 @@ import { useMemo, useState } from "react";
 import { AppShell } from "../components/AppShell";
 import { Badge } from "../components/shared/Badge";
 import { Modal } from "../components/shared/Modal";
-import useDebounce from "../hooks/useDebounce";
-import { useDataStore } from "../store/data-store";
 import DeudasFiltro from "@/app/components/fiadores/filters";
 import DeudasTable from "@/app/components/fiadores/table";
 import CreateDeudaForm from "@/app/components/fiadores/create";
-import { DeudaStatus, Producto } from "../data/mock";
+import useDebounce from "../hooks/useDebounce";
+import { useDataStore } from "../store/data-store";
+import { DebtStatus, Product, User } from "../types/backend";
 
 const currency = new Intl.NumberFormat("es-NI", {
   style: "currency",
@@ -23,16 +23,23 @@ const fecha = new Intl.DateTimeFormat("es-ES", {
   year: "numeric",
 });
 
-const statusTone: Record<string, "blue" | "amber" | "green" | "gray" | "red"> = {
-  activa: "green",
-  pendiente: "amber",
-  pagada: "green",
-  saldada: "gray",
-  vencida: "red",
+const statusTone: Record<string, "blue" | "amber" | "green" | "gray" | "red"> =
+  {
+    ACTIVE: "blue",
+    PENDING: "amber",
+    PAID: "green",
+    SETTLED: "green",
+  };
+
+const statusLabel: Record<DebtStatus, string> = {
+  ACTIVE: "Activa",
+  PENDING: "Pendiente",
+  PAID: "Pagada",
+  SETTLED: "Saldada",
 };
 
-type SelectedProducto = Producto & { cantidad: number };
-type FiadorOption = { value: number; label: string; image?: string | null };
+type SelectedProducto = Product & { cantidad: number };
+type FiadorOption = { value: string; label: string; image?: string | null };
 
 export default function FiadoresPage() {
   const [status, setStatus] = useState<string>("todos");
@@ -41,54 +48,56 @@ export default function FiadoresPage() {
   const [detalleId, setDetalleId] = useState<number | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [productPickerOpen, setProductPickerOpen] = useState(false);
-  const [selectedFiadorId, setSelectedFiadorId] = useState<number | null>(null);
+  const [selectedFiadorId, setSelectedFiadorId] = useState<string | null>(null);
   const [fechaPagar, setFechaPagar] = useState("");
   const [selectedProducts, setSelectedProducts] = useState<SelectedProducto[]>(
     []
   );
-  const debouncedNombre = useDebounce(nombre, 5000);
+  const debouncedNombre = useDebounce(nombre, 500);
 
-  const deudas = useDataStore((state) => state.deudas);
-  const fiadores = useDataStore((state) => state.fiadores);
-  const usuarios = useDataStore((state) => state.usuarios);
-  const productos = useDataStore((state) => state.productos);
-  const deleteDeuda = useDataStore((state) => state.deleteDeuda);
-  const addDeuda = useDataStore((state) => state.addDeuda);
-  const updateDeuda = useDataStore((state) => state.updateDeuda);
+  const deudas = useDataStore((state) => state.debts);
+  const users = useDataStore((state) => state.users);
+  const productos = useDataStore((state) => state.products);
+  const createDebt = useDataStore((state) => state.createDebt);
+  const updateDebtStatus = useDataStore((state) => state.updateDebtStatus);
   const hydrated = useDataStore((state) => state.hydrated);
+  const loading = useDataStore((state) => state.loading);
+  const error = useDataStore((state) => state.error);
 
   const fiadorOptions: FiadorOption[] = useMemo(
     () =>
-      usuarios.map((u) => ({
-        value: u.id,
-        label: `${u.nombre} ${u.apellido || ""}`.trim(),
-        image: u.imagen,
+      users.map((u: User) => ({
+        value: u.uuid,
+        label: `${u.firstname} ${u.lastname}`.trim(),
+        image: u.picture ?? undefined,
       })),
-    [usuarios]
+    [users]
   );
 
   const deudasFiltradas = useMemo(() => {
-    const enriched = deudas
-      .map((deuda) => ({
-        ...deuda,
-        fiador: fiadores.find((f) => f.id === deuda.fiadorId),
-        productosCount: deuda.productos.reduce((sum, p) => sum + p.cantidad, 0),
-      }))
-      .filter((d) => d.fiador);
+    const enriched = deudas.map((deuda) => ({
+      ...deuda,
+      fiador: deuda.user,
+      productosCount: deuda.products.reduce(
+        (sum, p) => sum + p.quantity,
+        0
+      ),
+    }));
 
     return enriched.filter((deuda) => {
       if (status !== "todos" && deuda.status !== status) return false;
       if (
         debouncedNombre &&
-        !deuda.fiador?.nombre
+        !`${deuda.fiador.firstname} ${deuda.fiador.lastname}`
           .toLowerCase()
           .includes(debouncedNombre.toLowerCase())
       )
         return false;
-      if (fechaFiltro && deuda.fechaPagar !== fechaFiltro) return false;
+      if (fechaFiltro && deuda.date_pay.slice(0, 10) !== fechaFiltro)
+        return false;
       return true;
     });
-  }, [deudas, fiadores, status, debouncedNombre, fechaFiltro]);
+  }, [deudas, status, debouncedNombre, fechaFiltro]);
 
   const detalle = deudasFiltradas.find(
     (d) => detalleId !== null && d.id === Number(detalleId)
@@ -99,41 +108,38 @@ export default function FiadoresPage() {
     0
   );
 
-  const toggleProducto = (producto: Producto) => {
+  const toggleProducto = (producto: Product) => {
     setSelectedProducts((prev) => {
-      const exists = prev.find((p) => p.id === producto.id);
+      const exists = prev.find((p) => p.uuid === producto.uuid);
       if (exists) {
-        return prev.filter((p) => p.id !== producto.id);
+        return prev.filter((p) => p.uuid !== producto.uuid);
       }
       return [...prev, { ...producto, cantidad: 1 }];
     });
   };
 
-  const updateQuantity = (id: number, cantidad: number) => {
+  const updateQuantity = (uuid: string, cantidad: number) => {
     setSelectedProducts((prev) =>
       prev.map((p) =>
-        p.id === id
+        p.uuid === uuid
           ? { ...p, cantidad: Math.min(Math.max(1, cantidad), p.stock) }
           : p
       )
     );
   };
 
-  const handleCreateDebt = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleCreateDebt = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
     if (selectedFiadorId === null || !fechaPagar || !selectedProducts.length)
       return;
-    const nextId = deudas.reduce((max, d) => Math.max(max, d.id), 0) + 1;
-    addDeuda({
-      id: nextId,
-      fiadorId: selectedFiadorId,
-      fechaPagar,
-      status: "activa",
-      monto: totalNuevo,
-      productos: selectedProducts.map((p) => ({
-        nombre: p.name,
-        precio: p.price,
-        cantidad: p.cantidad,
+    await createDebt({
+      user_uuid: selectedFiadorId,
+      dueDate: fechaPagar,
+      products: selectedProducts.map((p) => ({
+        product_uuid: p.uuid,
+        quantity: p.cantidad,
       })),
     });
     setCreateOpen(false);
@@ -142,15 +148,18 @@ export default function FiadoresPage() {
     setFechaPagar("");
   };
 
-  if (!hydrated) {
+  if (!hydrated || loading) {
     return (
       <AppShell
         title="Fiadores"
         description="Listado de fiadores con sus deudas activas o pendientes"
       >
         <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
-          Cargando datos locales...
+          Sincronizando datos con el backend...
         </div>
+        {error ? (
+          <p className="mt-3 text-sm text-rose-600">Error: {error}</p>
+        ) : null}
       </AppShell>
     );
   }
@@ -173,20 +182,27 @@ export default function FiadoresPage() {
       <DeudasTable
         rows={deudasFiltradas.map((d) => ({
           id: d.id,
-          fiadorNombre: d.fiador?.nombre || "Desconocido",
-          fechaPagar: d.fechaPagar,
-          status: d.status,
-          monto: d.monto,
-          productosCount: d.productosCount,
-          productos: d.productos,
+          uuid: d.uuid,
+          fiadorNombre: `${d.fiador.firstname} ${d.fiador.lastname}`,
+          fechaPagar: d.date_pay,
+          status: d.status as DebtStatus,
+          monto: Number(d.amount),
+          productosCount: d.products.reduce(
+            (sum, p) => sum + p.quantity,
+            0
+          ),
+          productos: d.products.map((prod) => ({
+            nombre: prod.product.name,
+            precio: prod.price,
+            cantidad: prod.quantity,
+          })),
         }))}
         currency={currency}
         fecha={fecha}
         statusTone={statusTone}
-        deleteDeuda={deleteDeuda}
         setDetalleId={setDetalleId}
-        onStatusChange={(id, status) =>
-          updateDeuda(id, { status: status as DeudaStatus })
+        onStatusChange={(uuid, status) =>
+          updateDebtStatus(uuid, status as DebtStatus)
         }
       />
 
@@ -224,11 +240,11 @@ export default function FiadoresPage() {
           <div className="grid gap-2">
             {productos.map((producto) => {
               const selected = selectedProducts.some(
-                (p) => p.id === producto.id
+                (p) => p.uuid === producto.uuid
               );
               return (
                 <div
-                  key={producto.id}
+                  key={producto.uuid}
                   className="group relative flex items-center justify-between overflow-hidden rounded-lg border border-slate-200 px-3 py-2 transition duration-300 hover:border-slate-300"
                 >
                   <div className="absolute inset-0 lava-anim opacity-60 transition-opacity duration-500 group-hover:opacity-90" />
@@ -279,11 +295,11 @@ export default function FiadoresPage() {
               <div>
                 <p className="text-sm text-slate-500">Fiador</p>
                 <p className="text-lg font-semibold text-slate-900">
-                  {detalle.fiador?.nombre}
+                  {detalle.fiador.firstname} {detalle.fiador.lastname}
                 </p>
               </div>
               <Badge
-                label={detalle.status.toUpperCase()}
+                label={statusLabel[detalle.status as DebtStatus] ?? detalle.status}
                 tone={statusTone[detalle.status] || "gray"}
               />
             </div>
@@ -294,26 +310,26 @@ export default function FiadoresPage() {
                 <span className="text-right">Total</span>
               </div>
               <div className="divide-y divide-slate-100">
-                {detalle.productos.map((prod, idx) => (
+                {detalle.products.map((prod) => (
                   <div
-                    key={`${prod.nombre}-${idx}`}
+                    key={`${prod.uuid}`}
                     className="grid grid-cols-4 px-4 py-2 text-sm text-slate-700"
                   >
-                    <span className="col-span-2">{prod.nombre}</span>
-                    <span>{prod.cantidad}</span>
+                    <span className="col-span-2">{prod.product.name}</span>
+                    <span>{prod.quantity}</span>
                     <span className="text-right font-semibold">
-                      {currency.format(prod.precio * prod.cantidad)}
+                      {currency.format(prod.price * prod.quantity)}
                     </span>
                   </div>
                 ))}
               </div>
               <div className="flex items-center justify-between bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900">
                 <span>Total general</span>
-                <span>{currency.format(detalle.monto)}</span>
+                <span>{currency.format(Number(detalle.amount))}</span>
               </div>
             </div>
             <p className="text-sm text-slate-500">
-              Fecha limite: {fecha.format(new Date(detalle.fechaPagar))}
+              Fecha límite: {fecha.format(new Date(detalle.date_pay))}
             </p>
           </div>
         ) : null}

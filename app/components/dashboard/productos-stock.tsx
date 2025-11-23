@@ -1,7 +1,8 @@
-import { productTypeLabels, Producto } from "@/app/data/mock";
+import { productTypeLabels } from "@/app/data/mock";
+import { Product } from "@/app/types/backend";
 
 type Props = {
-  productos: Producto[];
+  productos: Product[];
   currency: Intl.NumberFormat;
 };
 

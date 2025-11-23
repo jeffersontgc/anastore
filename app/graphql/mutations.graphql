@@ -1,0 +1,102 @@
+mutation CreateUser($input: CreateUserInput!) {
+  createUser(createUserInput: $input) {
+    status
+    message
+  }
+}
+
+mutation CreateProduct($input: CreateProductInput!) {
+  createProduct(args: $input) {
+    status
+    message
+  }
+}
+
+mutation UpdateProduct($input: UpdateProductInput!) {
+  updateProduct(args: $input) {
+    id
+    uuid
+    name
+    price
+    stock
+    type
+    createdAt
+    updatedAt
+  }
+}
+
+mutation RemoveProduct($uuid: String!) {
+  removeProduct(uuid: $uuid)
+}
+
+mutation IncreaseStock($uuid: String!, $quantity: Int!) {
+  increaseStock(uuid: $uuid, quantity: $quantity) {
+    id
+    uuid
+    name
+    price
+    stock
+    type
+    updatedAt
+    createdAt
+  }
+}
+
+mutation CreateDebt($input: CreateDebtInput!) {
+  createDebt(createDebtInput: $input) {
+    id
+    uuid
+    amount
+    status
+    date_pay
+    createdAt
+    updatedAt
+    user {
+      id
+      uuid
+      firstname
+      lastname
+      email
+    }
+    products {
+      id
+      uuid
+      quantity
+      price
+      product {
+        id
+        uuid
+        name
+        price
+        stock
+        type
+      }
+    }
+  }
+}
+
+mutation UpdateDebtStatus($uuid: String!, $status: DebtsStatus!) {
+  updateDebtStatus(uuid: $uuid, status: $status) {
+    id
+    uuid
+    status
+    amount
+    date_pay
+    updatedAt
+    user {
+      id
+      uuid
+      firstname
+      lastname
+    email
+    }
+  }
+}
+
+mutation SignIn($input: LoginUserInput!) {
+  signIn(loginUserInput: $input) {
+    access_token
+    refresh_token
+    session_uuid
+  }
+}

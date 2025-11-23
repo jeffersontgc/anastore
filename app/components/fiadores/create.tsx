@@ -5,13 +5,13 @@ import Select, {
   OptionProps,
   SingleValueProps,
 } from "react-select";
-import { Producto } from "@/app/data/mock";
+import { Product } from "@/app/types/backend";
 
 interface Props {
   handleCreateDebt: (e: React.FormEvent<HTMLFormElement>) => void;
-  fiadorOptions: { label: string; value: number; image?: string | null }[];
-  selectedFiadorId: number | null;
-  setSelectedFiadorId: (id: number | null) => void;
+  fiadorOptions: { label: string; value: string; image?: string | null }[];
+  selectedFiadorId: string | null;
+  setSelectedFiadorId: (id: string | null) => void;
   fechaPagar: string;
   setFechaPagar: (date: string) => void;
   selectedProducts: SelectedProducto[];
@@ -20,11 +20,11 @@ interface Props {
   setProductPickerOpen: (open: boolean) => void;
   setCreateOpen: (open: boolean) => void;
   setSelectedProducts: React.Dispatch<React.SetStateAction<SelectedProducto[]>>;
-  updateQuantity: (id: number, quantity: number) => void;
+  updateQuantity: (uuid: string, quantity: number) => void;
 }
 
-type SelectedProducto = Producto & { cantidad: number };
-type FiadorOption = { value: number; label: string; image?: string | null };
+type SelectedProducto = Product & { cantidad: number };
+type FiadorOption = { value: string; label: string; image?: string | null };
 const CreateDeudaForm: React.FC<Props> = ({
   handleCreateDebt,
   fiadorOptions,
@@ -146,7 +146,7 @@ const CreateDeudaForm: React.FC<Props> = ({
             <div className="space-y-2">
               {selectedProducts.map((prod) => (
                 <div
-                  key={prod.id}
+                  key={prod.uuid}
                   className="relative overflow-hidden rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 sm:flex sm:items-center sm:justify-between"
                 >
                   <div className="absolute inset-0 lava-anim opacity-40" />
@@ -166,7 +166,7 @@ const CreateDeudaForm: React.FC<Props> = ({
                         aria-label="Disminuir"
                         onClick={() =>
                           updateQuantity(
-                            prod.id,
+                            prod.uuid,
                             Math.max(1, prod.cantidad - 1)
                           )
                         }
@@ -182,7 +182,7 @@ const CreateDeudaForm: React.FC<Props> = ({
                         aria-label="Aumentar"
                         onClick={() =>
                           updateQuantity(
-                            prod.id,
+                            prod.uuid,
                             Math.min(prod.stock, prod.cantidad + 1)
                           )
                         }
@@ -198,7 +198,7 @@ const CreateDeudaForm: React.FC<Props> = ({
                       type="button"
                       onClick={() =>
                         setSelectedProducts((prev) =>
-                          prev.filter((p) => p.id !== prod.id)
+                          prev.filter((p) => p.uuid !== prod.uuid)
                         )
                       }
                       className="text-xs font-semibold text-rose-600 hover:underline"

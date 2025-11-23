@@ -30,9 +30,10 @@ const DeudasFiltro: React.FC<Props> = ({
             onChange={(e) => setStatus(e.target.value)}
           >
             <option value="todos">Todos</option>
-            <option value="activa">Activa</option>
-            <option value="pendiente">Pendiente</option>
-            <option value="pagada">Pagada</option>
+            <option value="ACTIVE">Activa</option>
+            <option value="PENDING">Pendiente</option>
+            <option value="PAID">Pagada</option>
+            <option value="SETTLED">Saldada</option>
           </select>
         </div>
         <div className="flex flex-col gap-2">

@@ -1,0 +1,184 @@
+query Products($args: FilterProductInput) {
+  products(args: $args) {
+    data {
+      id
+      uuid
+      name
+      price
+      stock
+      type
+      createdAt
+      updatedAt
+    }
+    total
+    totalPages
+    page
+    limit
+    hasNextPage
+    hasPreviousPage
+  }
+}
+
+query LowStockProducts($threshold: Int) {
+  lowStockProducts(threshold: $threshold) {
+    id
+    uuid
+    name
+    price
+    stock
+    type
+    createdAt
+    updatedAt
+  }
+}
+
+query Debts {
+  debts {
+    data {
+      id
+      uuid
+      amount
+      status
+      date_pay
+      createdAt
+      updatedAt
+      user {
+        id
+        uuid
+        firstname
+        lastname
+        email
+        picture
+        isDelinquent
+        createdAt
+        updatedAt
+      }
+      products {
+        id
+        uuid
+        quantity
+        price
+        product {
+          id
+          uuid
+          name
+          price
+          stock
+          type
+          createdAt
+          updatedAt
+        }
+      }
+    }
+    total
+    totalAmount
+    totalPages
+    page
+    limit
+    hasNextPage
+    hasPreviousPage
+  }
+}
+
+query DebtsByUser($user_uuid: String!) {
+  debtsByUser(user_uuid: $user_uuid) {
+    id
+    uuid
+    amount
+    status
+    date_pay
+    createdAt
+    updatedAt
+    user {
+      id
+      uuid
+      firstname
+      lastname
+      email
+      picture
+      isDelinquent
+      createdAt
+      updatedAt
+    }
+    products {
+      id
+      uuid
+      quantity
+      price
+      product {
+        id
+        uuid
+        name
+        price
+        stock
+        type
+        createdAt
+        updatedAt
+      }
+    }
+  }
+}
+
+query Users {
+  users {
+    id
+    uuid
+    firstname
+    lastname
+    email
+    picture
+    isDelinquent
+    createdAt
+    updatedAt
+  }
+}
+
+query GetUser($uuid: String!) {
+  getUser(uuid: $uuid) {
+    id
+    uuid
+    firstname
+    lastname
+    email
+    picture
+    isDelinquent
+    createdAt
+    updatedAt
+    debts {
+      id
+      uuid
+      amount
+      status
+      date_pay
+      createdAt
+      updatedAt
+    }
+  }
+}
+
+query GetProduct($product_uuid: String!) {
+  getProduct(product_uuid: $product_uuid) {
+    id
+    uuid
+    name
+    price
+    stock
+    type
+    createdAt
+    updatedAt
+  }
+}
+
+query GetMe {
+  getMe: me {
+    id
+    uuid
+    firstname
+    lastname
+    email
+    picture
+    isDelinquent
+    createdAt
+    updatedAt
+  }
+}

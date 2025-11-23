@@ -6,60 +6,59 @@ import { Modal } from "../components/shared/Modal";
 import ProductosTable from "../components/productos/table";
 import ProductosForm from "../components/productos/form";
 import { useDataStore } from "../store/data-store";
-import { Producto, ProductoType } from "../data/mock";
+import { ProductType } from "../types/backend";
 
 type FormState = {
   name: string;
   price: string;
   stock: string;
-  type: ProductoType;
+  type: ProductType;
 };
 
 const emptyForm: FormState = {
   name: "",
   price: "",
   stock: "",
-  type: "granos_basicos",
+  type: "GRANOS_BASICOS",
 };
 
 export default function ProductosPage() {
   const [open, setOpen] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingUuid, setEditingUuid] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
 
-  const productos = useDataStore((state) => state.productos);
-  const addProducto = useDataStore((state) => state.addProducto);
-  const updateProducto = useDataStore((state) => state.updateProducto);
-  const deleteProducto = useDataStore((state) => state.deleteProducto);
+  const productos = useDataStore((state) => state.products);
+  const createProducto = useDataStore((state) => state.createProduct);
+  const updateProducto = useDataStore((state) => state.updateProduct);
+  const deleteProducto = useDataStore((state) => state.removeProduct);
   const hydrated = useDataStore((state) => state.hydrated);
+  const loading = useDataStore((state) => state.loading);
+  const error = useDataStore((state) => state.error);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const nextId =
-      productos.reduce((max, p) => Math.max(max, p.id), 0) + 1;
-    const payload: Producto = {
-      id: editingId ?? nextId,
+    const payload = {
       name: form.name,
       price: Number(form.price || 0),
       stock: Number(form.stock || 0),
       type: form.type,
     };
 
-    if (editingId) {
-      updateProducto(editingId, payload);
+    if (editingUuid) {
+      await updateProducto({ uuid: editingUuid, ...payload });
     } else {
-      addProducto(payload);
+      await createProducto(payload);
     }
 
     setOpen(false);
-    setEditingId(null);
+    setEditingUuid(null);
     setForm(emptyForm);
   }
 
-  function startEdit(id: number) {
-    const producto = productos.find((p) => p.id === id);
+  function startEdit(uuid: string) {
+    const producto = productos.find((p) => p.uuid === uuid);
     if (!producto) return;
-    setEditingId(id);
+    setEditingUuid(uuid);
     setForm({
       name: producto.name,
       price: String(producto.price),
@@ -69,15 +68,18 @@ export default function ProductosPage() {
     setOpen(true);
   }
 
-  if (!hydrated) {
+  if (!hydrated || loading) {
     return (
       <AppShell
         title="Productos"
         description="Gestiona el inventario disponible para los fiados"
       >
         <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
-          Cargando datos locales...
+          Sincronizando datos con el backend...
         </div>
+        {error ? (
+          <p className="mt-3 text-sm text-rose-600">Error: {error}</p>
+        ) : null}
       </AppShell>
     );
   }
@@ -107,10 +109,10 @@ export default function ProductosPage() {
         open={open}
         onClose={() => {
           setOpen(false);
-          setEditingId(null);
+          setEditingUuid(null);
           setForm(emptyForm);
         }}
-        title={editingId ? "Editar producto" : "Crear producto"}
+        title={editingUuid ? "Editar producto" : "Crear producto"}
       >
         <ProductosForm
           form={form}
@@ -118,10 +120,10 @@ export default function ProductosPage() {
           onSubmit={handleSubmit}
           onClose={() => {
             setOpen(false);
-            setEditingId(null);
+            setEditingUuid(null);
             setForm(emptyForm);
           }}
-          editingId={editingId}
+          editingUuid={editingUuid}
         />
       </Modal>
     </AppShell>
