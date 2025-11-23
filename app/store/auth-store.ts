@@ -81,11 +81,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         accessToken: data.signIn.access_token,
         refreshToken: data.signIn.refresh_token,
         sessionUuid: data.signIn.session_uuid,
-        loading: false,
       });
 
       setCookie("access_token", data.signIn.access_token, 1);
       setCookie("refresh_token", data.signIn.refresh_token, 7);
+      await get().getMe();
+      set({ loading: false });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "No se pudo iniciar sesión";
@@ -99,13 +100,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         document: queries,
         operationName: "GetMe",
       });
-      console.log("data", data?.getMe);
       const user = data.getMe ?? undefined;
       set({ currentUser: user });
       return user;
     } catch (error) {
       set({ currentUser: undefined });
-      throw error;
+      return undefined;
     }
   },
   logout: async () => {
