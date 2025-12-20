@@ -1,8 +1,8 @@
 "use client";
 
 import { create } from "zustand";
-import queries from "../graphql/querys.graphql";
-import mutations from "../graphql/mutations.graphql";
+import queries from "../graphql/querys";
+import mutations from "../graphql/mutations";
 import { graphqlRequest } from "../graphql/client";
 import {
   Debt,

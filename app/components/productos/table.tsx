@@ -102,19 +102,19 @@ const ProductosTable: React.FC<Props> = ({
                   <div className="flex justify-end gap-2">
                     <button
                       type="button"
-                      onClick={() => startEdit(producto.id)}
-                    className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteProducto(producto.uuid)}
-                    className="rounded-lg bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-600"
-                  >
-                    Eliminar
-                  </button>
-                </div>
+                      onClick={() => startEdit(producto.uuid)}
+                      className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteProducto(producto.uuid)}
+                      className="rounded-lg bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-600"
+                    >
+                      Eliminar
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

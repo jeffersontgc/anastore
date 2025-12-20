@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { create } from "zustand";
-import mutations from "../graphql/mutations.graphql";
-import queries from "../graphql/querys.graphql";
+import mutations from "../graphql/mutations";
+import queries from "../graphql/querys";
 import { graphqlRequest } from "../graphql/client";
 import { SignInResponse, User } from "../types/backend";
 
