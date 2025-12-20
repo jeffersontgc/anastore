@@ -6,7 +6,7 @@ import { Modal } from "../components/shared/Modal";
 import UsersTable from "../components/usuarios/table";
 import CreateUserFormModal from "../components/usuarios/form";
 import { useDataStore } from "../store/data-store";
-import { CreateUserForm } from "../types/users";
+import { CreateUserForm, User } from "../types/users";
 import { useAuthStore } from "@/app/store/auth-store";
 
 const emptyForm: CreateUserForm = {
@@ -76,32 +76,22 @@ export default function UsuariosPage() {
       title="Usuarios"
       description="Gestiona los fiadores registrados y sus datos de contacto"
     >
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-          <div>
-            <h2 className="text-sm font-semibold uppercase text-slate-600">
-              Usuarios
-            </h2>
-            <p className="text-xs text-slate-500">
-              {usuarios.length} fiadores registrados
-            </p>
-          </div>
-          {user?.isCeo && (
-            <button
-              type="button"
-              onClick={() => setOpen(true)}
-              className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800"
-            >
-              Crear usuario
-            </button>
-          )}
+      {user?.isCeo && (
+        <div className="mb-3 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800"
+          >
+            Crear usuario
+          </button>
         </div>
+      )}
 
-        <UsersTable
-          usuarios={usuarios}
-          deudasActivasPorUsuario={deudasActivasPorUsuario}
-        />
-      </div>
+      <UsersTable
+        usuarios={usuarios}
+        deudasActivasPorUsuario={deudasActivasPorUsuario}
+      />
 
       <Modal
         open={open}
