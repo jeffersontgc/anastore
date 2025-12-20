@@ -86,21 +86,16 @@ export function AppShell({ children, title, description }: Props) {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
-        <div className="flex items-center justify-between">
-          {(title || description) && (
-            <div className="mb-6">
-              {title ? (
-                <h1 className="text-2xl font-semibold text-slate-900">
-                  {title}
-                </h1>
-              ) : null}
-              {description ? (
-                <p className="mt-1 text-sm text-slate-600">{description}</p>
-              ) : null}
-            </div>
-          )}
-          <span>Hola {user?.firstname}</span>
-        </div>
+        {(title || description) && (
+          <div className="mb-6">
+            {title ? (
+              <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
+            ) : null}
+            {description ? (
+              <p className="mt-1 text-sm text-slate-600">{description}</p>
+            ) : null}
+          </div>
+        )}
         {children}
       </main>
 
