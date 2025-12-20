@@ -13,30 +13,22 @@ export const authenticate = async (
     return { canContinue: false, status: MiddlewareStatus.INVALID_TOKEN };
   }
 
-  // Si no hay secreto configurado, solo verificamos presencia de token (dev)
   if (!JWT_SECRET) {
-    return { canContinue: true };
+    // Solo permitir esto en desarrollo local estricto
+    return process.env.NODE_ENV === "development"
+      ? { canContinue: true }
+      : { canContinue: false, status: MiddlewareStatus.INVALID_TOKEN };
   }
 
   try {
-    const { payload } = await jwtVerify(
-      token,
-      new TextEncoder().encode(JWT_SECRET)
-    );
-
-    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+    await jwtVerify(token, new TextEncoder().encode(JWT_SECRET));
+    return { canContinue: true };
+  } catch (error: any) {
+    // jose lanza errores específicos. 'ERR_JWT_EXPIRED' es el más común.
+    if (error.code === "ERR_JWT_EXPIRED") {
       return { canContinue: false, status: MiddlewareStatus.EXPIRED_TOKEN };
     }
-
-    return { canContinue: true };
-  } catch (error) {
-    // Si falla la validación pero tenemos token, en dev permitimos continuar.
-    if (
-      (error as { code?: string })?.code === "ERR_JWT_EXPIRED" ||
-      (error as { claim?: string })?.claim === "exp"
-    ) {
-      return { canContinue: false, status: MiddlewareStatus.EXPIRED_TOKEN };
-    }
-    return { canContinue: true };
+    // Para cualquier otro error (token inválido/hackeado), denegar acceso
+    return { canContinue: false, status: MiddlewareStatus.INVALID_TOKEN };
   }
 };
